@@ -12,8 +12,6 @@ if (is_null($dbh)) {
     echo "<p class=\"db_error\">Could not establish a connection to the database. Please try again later.</p>\n";
 }
 
-
-
 ?>
 
 <!DOCTYPE html>
@@ -25,6 +23,8 @@ if (is_null($dbh)) {
             color: #DD0000;
         }
     </style>
+
+    <!-- script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script -->
 </head>
 
 <body>
@@ -33,8 +33,12 @@ if (is_null($dbh)) {
     <select name="region_name">
         <?php
             foreach(getAllRegions($dbh) as $region) {
-            $region_name = $region['region_name'];
-            echo "<option value=\"$region_name\">$region_name</option>\n";
+                $region_name = $region['region_name'];
+                echo "<option value=\"$region_name\"";
+                echo ($region_name_from_get === $region_name)
+                    ? " selected=selected>"
+                    : ">";
+                echo $region_name . "</option>" . PHP_EOL;
         }
         ?>
     </select>
@@ -42,7 +46,38 @@ if (is_null($dbh)) {
 </form>
 
 <?php
-    if (isset($_GET['submit'])) {
+    if (!is_null($region_name_from_get)) {
+        $wineries = getAllWineryInRegionByName($dbh, $region_name_from_get);
+
+        if (is_null($wineries)) {
+            echo "<p>No wineries in the " . $region_name_from_get . " region.</p>" . PHP_EOL;
+        }
+        else {
+            echo "<p>Displaying wineries in the " .$region_name_from_get . " region: </p>" . PHP_EOL;
+            foreach ($wineries as $winery) {
+                ?>
+                <ul>
+                    <li><?php echo $winery['winery_name'] ?></li>
+                    <ul>
+                    <?php
+                    $wines = getWinesByWineryId($dbh, $winery['winery_id']);
+
+                    if (is_null($wines)) {
+                        ?>
+                        <li>No wines at this winery! Bummer...</li>
+                        <?php
+                    }
+                    else {
+                        foreach ($wines as $wine) {
+                            echo "<li>" . $wine->getName() . "</li>" . PHP_EOL;
+                        }
+                    } ?>
+                    </ul>
+                </ul>
+            <?php
+            }
+        }
+
     }
 ?>
 
