@@ -1,5 +1,6 @@
 <?php
 require_once('../../connect_pdo.php');
+require_once('winestore_functions.php');
 
 $region_name_from_get = (isset($_GET["region_name"]) && !is_null($_GET["region_name"])) ?
     $_GET["region_name"] : null;
@@ -11,20 +12,7 @@ if (is_null($dbh)) {
     echo "<p class=\"db_error\">Could not establish a connection to the database. Please try again later.</p>\n";
 }
 
-function getAllRegions($dbh) {
-    // Check if connection is open
-    if (is_null($dbh))
-        return null;
 
-    // Prepare SQL statement to select all regions
-    $stmt = $dbh->prepare("SELECT region_id, region_name FROM region");
-
-    // Execute SQL statement
-    $stmt->execute();
-
-    // Return the results
-    return $stmt->fetchAll();
-}
 
 ?>
 
@@ -50,9 +38,13 @@ function getAllRegions($dbh) {
         }
         ?>
     </select>
+    <input type="submit" value="Explore!"/>
 </form>
 
-
+<?php
+    if (isset($_GET['submit'])) {
+    }
+?>
 
 </body>
 </html>
