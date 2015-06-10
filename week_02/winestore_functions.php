@@ -15,29 +15,58 @@ function getAllRegions($dbh) {
     return $stmt->fetchAll();
 }
 
-function getWineIdFromName($dbh, $name) {
+function getRegionIdFromName($dbh, $name) {
     $sql = 'SELECT region_id
     FROM region
     WHERE region_name = ?';
 
+    // Prepare SQL statement
     $stmt = $dbh->prepare($sql);
+
+    // Bind region name variable to SQL statement
     $stmt->bindValue(1, $name);
+
+    // Execute the SQL statement
     $stmt->execute();
 
-    $result = $stmt->fetch(PDO::FETCH_NUM);
+    // Fetch an integer index array of result(s)
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    return ()
-
+    // Return region id or null if region name couldn't be found
+    return ($result) ? $result['region_id'] : null;
 }
 
-function getWineByRegionName($dbh, $name) {
+function getAllWineryInRegionByName($dbh, $name) {
     // Check if connection is open
     if (is_null($dbh))
-    return null;
+        return null;
 
-    // Find region id
+    // Find region id or return null if a match isn't found
+    if (is_null(($region_id = getRegionIdFromName($dbh, $name)))) {
+        return null;
+    }
 
+    $sql = 'SELECT winery_id, winery_name
+           FROM winery
+           WHERE region_id = :region_id';
 
+    $stmt = $dbh->prepare($sql);
+    $stmt->bindValue(':region_id', $region_id);
+    $stmt->execute();
+
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    return (!empty($results) && $results) ? $results : null;
 }
 
+function getWinesByWineryId($dbh, $winery_id) {
+    $sql = 'SELECT * FROM winery WHERE winery_id = :winery_id';
+    $stmt = $dbh->prepare($sql);
+    $stmt->bindValue(':winery_id', $winery_id);
+    $stmt->execute();
+
+    $results = $stmt->fetchAll(PDO::FETCH_CLASS, "Wine");
+
+    return (!empty($results) && $results) ? $results : null;
+}
 ?>
